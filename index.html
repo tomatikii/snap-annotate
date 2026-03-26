@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnapAnnotate — Turn Any URL into Annotated Slides</title>
+<meta name="description" content="Paste a link, get social-ready carousel images with spotlights, badges, and step-by-step annotations. No Canva needed.">
+<link rel="canonical" href="https://snapannotate.com">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%234F46E5'/><text x='16' y='23' font-size='20' font-weight='800' fill='white' text-anchor='middle' font-family='sans-serif'>S</text></svg>">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="SnapAnnotate — URL to Annotated Slides">
+<meta property="og:description" content="Paste a link, get social-ready carousel images with spotlights, badges, and step-by-step annotations.">
+<meta property="og:url" content="https://snapannotate.com">
+
+<!-- Twitter/X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SnapAnnotate — URL to Annotated Slides">
+<meta name="twitter:description" content="Paste a link, get social-ready carousel images with spotlights, badges, and step-by-step annotations.">
+
+<link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#F8F8F8;
+  --white:#FFFFFF;
+  --text:#111;
+  --text-sub:#555;
+  --text-muted:#999;
+  --border:#E5E5E5;
+  --primary:#4F46E5;
+  --primary-hover:#4338CA;
+  --primary-light:rgba(79,70,229,.06);
+  --success:#22C55E;
+  --error:#DC2626;
+  --error-bg:#FEF2F2;
+  --error-border:#FECACA;
+  --radius:12px;
+  --radius-sm:8px;
+}
+
+/* Accessibility: reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:0.01ms !important;
+    transition-duration:0.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+  scrollbar-gutter:stable;
+}
+
+/* Skip to content */
+.skip-link{
+  position:absolute;
+  top:-100%;
+  left:16px;
+  background:var(--primary);
+  color:#fff;
+  padding:8px 16px;
+  border-radius:0 0 var(--radius-sm) var(--radius-sm);
+  font-size:0.875rem;
+  font-weight:600;
+  z-index:100;
+  text-decoration:none;
+  transition:top 0.2s;
+}
+.skip-link:focus{top:0}
+
+/* Focus styles */
+:focus-visible{
+  outline:2px solid var(--primary);
+  outline-offset:2px;
+}
+
+/* Header */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  max-width:960px;
+  margin:0 auto;
+  padding:clamp(16px,3vw,24px) 24px 0;
+}
+.logo{
+  font-family:'Tektur',sans-serif;
+  font-size:clamp(1.25rem,2vw,1.5rem);
+  font-weight:900;
+  color:var(--text);
+  text-decoration:none;
+  letter-spacing:-.01em;
+}
+.beta-badge{
+  font-size:0.75rem;
+  font-weight:600;
+  color:var(--text-sub);
+  border:1.5px solid var(--border);
+  padding:4px 12px;
+  border-radius:99px;
+}
+
+/* Hero */
+.hero{
+  text-align:center;
+  max-width:720px;
+  margin:clamp(32px,6vw,60px) auto 0;
+  padding:0 24px;
+}
+.hero h1{
+  font-family:'Tektur',sans-serif;
+  font-size:clamp(2rem,5vw + 0.5rem,3.375rem);
+  font-weight:900;
+  letter-spacing:-.02em;
+  line-height:1.08;
+  margin-bottom:16px;
+  text-wrap:balance;
+}
+.hero p{
+  font-size:clamp(0.938rem,1.5vw,1rem);
+  color:var(--text-sub);
+  line-height:1.6;
+  max-width:520px;
+  margin:0 auto;
+}
+
+/* Input area */
+.input-area{
+  max-width:560px;
+  margin:clamp(24px,4vw,40px) auto 0;
+  padding:0 24px;
+}
+.input-row{
+  display:flex;
+  gap:0;
+  align-items:center;
+  background:var(--white);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:6px 6px 6px 16px;
+  transition:border-color .2s;
+}
+.input-row:focus-within{border-color:var(--primary)}
+
+.url-input{
+  flex:1;
+  border:none;
+  background:transparent;
+  font-family:'Inter',sans-serif;
+  font-size:0.938rem;
+  color:var(--text);
+  outline:none;
+  padding:10px 0;
+  min-width:0;
+}
+.url-input::placeholder{color:var(--text-muted)}
+
+/* Format toggle */
+.format-toggle{
+  display:flex;
+  background:var(--bg);
+  border-radius:var(--radius-sm);
+  padding:3px;
+  gap:2px;
+  flex-shrink:0;
+}
+.format-btn{
+  padding:8px 14px;
+  border:none;
+  background:transparent;
+  font-family:'Inter',sans-serif;
+  font-size:0.75rem;
+  font-weight:600;
+  color:var(--text-sub);
+  cursor:pointer;
+  border-radius:6px;
+  transition:all .15s;
+  line-height:1.2;
+  text-align:center;
+  min-height:44px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.format-btn span{
+  display:block;
+  font-size:0.625rem;
+  font-weight:500;
+  color:var(--text-muted);
+  margin-top:1px;
+}
+.format-btn.active{background:var(--primary);color:#fff}
+.format-btn.active span{color:rgba(255,255,255,.7)}
+@media(hover:hover){
+  .format-btn:hover:not(.active){background:var(--white)}
+}
+
+/* Generate button */
+.generate-btn{
+  display:block;
+  width:100%;
+  margin-top:12px;
+  padding:16px;
+  background:var(--primary);
+  border:none;
+  border-radius:var(--radius);
+  color:#fff;
+  font-family:'Tektur',sans-serif;
+  font-size:0.938rem;
+  font-weight:700;
+  cursor:pointer;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  transition:background .15s;
+  min-height:48px;
+}
+@media(hover:hover){
+  .generate-btn:hover{background:var(--primary-hover)}
+}
+.generate-btn:active{transform:scale(0.97)}
+.generate-btn:disabled{opacity:.85;cursor:not-allowed}
+.generate-btn.loading{
+  background:linear-gradient(90deg,var(--primary) 0%,var(--primary-hover) 50%,var(--primary) 100%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s ease-in-out infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.generate-btn .spinner{
+  display:inline-block;
+  width:16px;height:16px;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .6s linear infinite;
+  vertical-align:middle;
+  margin-right:8px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Progress */
+.progress-area{
+  display:none;
+  max-width:560px;
+  margin:16px auto 0;
+  padding:0 24px;
+}
+.progress-area.show{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+}
+.progress-step{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-size:0.75rem;
+  color:var(--text-muted);
+}
+.progress-step.active{color:var(--primary);font-weight:600}
+.progress-step.done{color:var(--success)}
+.progress-dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--border);
+}
+.progress-step.active .progress-dot{background:var(--primary);animation:pulse 1s infinite}
+.progress-step.done .progress-dot{background:var(--success)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.progress-sep{color:var(--border);font-size:0.625rem}
+
+/* Error */
+.error-msg{
+  display:none;
+  max-width:560px;
+  margin:12px auto 0;
+  padding:10px 16px;
+  background:var(--error-bg);
+  border:1px solid var(--error-border);
+  border-radius:var(--radius-sm);
+  color:var(--error);
+  font-size:0.813rem;
+}
+.error-msg[role="alert"]{display:none}
+.error-msg.show{display:block}
+
+/* Results */
+.results{
+  display:none;
+  max-width:960px;
+  margin:clamp(24px,4vw,40px) auto 0;
+  padding:0 24px;
+}
+.results.show{display:block}
+.results-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+.results-title{
+  font-family:'Tektur',sans-serif;
+  font-size:clamp(1.25rem,2vw,1.375rem);
+  font-weight:800;
+}
+.results-meta{font-size:0.75rem;color:var(--text-muted)}
+
+/* Carousel */
+.carousel-wrap{
+  position:relative;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px 48px 16px;
+  overflow:hidden;
+}
+.gallery{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  padding:8px 0 12px;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth;
+}
+.gallery::-webkit-scrollbar{height:0}
+
+.slide-card{
+  flex-shrink:0;
+  width:260px;
+  border-radius:var(--radius);
+  overflow:hidden;
+  scroll-snap-align:center;
+  transition:transform .3s ease,opacity .3s ease,border-color .3s ease,box-shadow .3s ease;
+  cursor:pointer;
+  border:1.5px solid var(--border);
+  opacity:.7;
+  transform:scale(.94);
+}
+@media(hover:hover){
+  .slide-card:hover{
+    opacity:1;
+    transform:scale(1.06);
+    border-color:var(--primary);
+    box-shadow:0 8px 28px rgba(79,70,229,.2);
+    z-index:2;
+    width:300px;
+  }
+}
+.slide-card.active{
+  opacity:1;
+  transform:scale(1.06);
+  border-color:var(--primary);
+  box-shadow:0 8px 28px rgba(79,70,229,.2);
+  z-index:2;
+  width:300px;
+}
+.slide-img{
+  width:100%;
+  aspect-ratio:4/5;
+  background:var(--bg);
+  overflow:hidden;
+}
+.slide-img img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.slide-info{padding:8px 10px;background:var(--white)}
+.slide-label{
+  font-size:0.688rem;
+  font-weight:600;
+  color:var(--text);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.slide-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:3px;
+}
+.slide-num{font-size:0.625rem;color:var(--text-muted)}
+.slide-dl-btn{
+  font-size:0.625rem;
+  font-weight:600;
+  color:var(--primary);
+  padding:4px 10px;
+  border:1px solid var(--primary);
+  border-radius:4px;
+  transition:all .15s;
+  background:none;
+  cursor:pointer;
+  font-family:'Inter',sans-serif;
+  min-height:28px;
+}
+@media(hover:hover){
+  .slide-dl-btn:hover{background:var(--primary);color:#fff}
+}
+
+/* Carousel arrows */
+.carousel-arrow{
+  position:absolute;
+  top:50%;
+  transform:translateY(-60%);
+  width:36px;height:36px;
+  border-radius:50%;
+  background:var(--white);
+  border:1.5px solid var(--border);
+  color:var(--text-sub);
+  font-size:1.25rem;
+  cursor:pointer;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  transition:all .15s;
+  min-width:44px;
+  min-height:44px;
+}
+@media(hover:hover){
+  .carousel-arrow:hover{
+    border-color:var(--primary);
+    color:var(--primary);
+    box-shadow:0 2px 12px rgba(79,70,229,.15);
+  }
+}
+.carousel-arrow-left{left:8px}
+.carousel-arrow-right{right:8px}
+
+/* Dots */
+.carousel-dots{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  padding-top:8px;
+}
+.carousel-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--border);
+  border:none;
+  cursor:pointer;
+  transition:all .2s;
+  padding:0;
+  min-width:8px;
+  min-height:8px;
+}
+.carousel-dot.active{background:var(--primary);transform:scale(1.2)}
+
+/* Detail panel */
+.slide-detail{
+  display:none;
+  margin-top:16px;
+  padding:16px 20px;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+}
+.slide-detail.show{display:block}
+.slide-detail-title{
+  font-family:'Tektur',sans-serif;
+  font-size:0.938rem;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.slide-detail-desc{
+  font-size:0.813rem;
+  color:var(--text-sub);
+  line-height:1.5;
+}
+
+/* Action buttons */
+.actions-row{display:flex;gap:10px;margin-top:16px}
+.action-btn{
+  flex:1;
+  padding:11px;
+  background:var(--white);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  font-size:0.813rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .15s;
+  min-height:44px;
+}
+@media(hover:hover){
+  .action-btn:hover{
+    border-color:var(--primary);
+    color:var(--primary);
+    background:var(--primary-light);
+  }
+}
+.action-btn:active{transform:scale(0.97)}
+
+/* Lightbox */
+.lightbox{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.88);
+  z-index:100;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.lightbox.show{display:flex}
+.lightbox img{
+  max-width:90vw;
+  max-height:90vh;
+  border-radius:12px;
+  box-shadow:0 8px 40px rgba(0,0,0,.5);
+}
+.lightbox-close{
+  position:fixed;
+  top:20px;right:24px;
+  color:#fff;
+  font-size:1.75rem;
+  cursor:pointer;
+  z-index:101;
+  opacity:.7;
+  transition:opacity .2s;
+  background:none;
+  border:none;
+  min-width:44px;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.lightbox-close:hover{opacity:1}
+
+/* How it works */
+.how-section{
+  max-width:640px;
+  margin:clamp(40px,6vw,64px) auto 0;
+  padding:0 24px;
+  text-align:center;
+}
+.how-title{
+  font-family:'Tektur',sans-serif;
+  font-size:clamp(1.25rem,2.5vw,1.5rem);
+  font-weight:800;
+  margin-bottom:clamp(24px,4vw,36px);
+}
+.steps-row{
+  display:flex;
+  justify-content:center;
+  gap:clamp(28px,5vw,56px);
+}
+.step-item{text-align:center;position:relative}
+.step-num{
+  width:24px;height:24px;
+  border-radius:50%;
+  background:var(--primary);
+  color:#fff;
+  font-size:0.688rem;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:absolute;
+  top:-4px;right:-8px;
+}
+.step-icon{font-size:2.5rem;margin-bottom:8px;display:block}
+.step-label{
+  font-family:'Tektur',sans-serif;
+  font-size:clamp(1rem,1.5vw,1.125rem);
+  font-weight:700;
+}
+
+/* Footer */
+footer{
+  max-width:960px;
+  margin:clamp(32px,5vw,48px) auto 0;
+  padding:20px 24px;
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:0.688rem;
+  color:var(--text-muted);
+}
+
+/* Responsive */
+@media(max-width:640px){
+  .input-row{flex-direction:column;padding:12px}
+  .format-toggle{width:100%;justify-content:center}
+  .steps-row{flex-wrap:wrap}
+  .carousel-wrap{padding:24px 16px 16px}
+  .carousel-arrow{display:none}
+  .actions-row{flex-direction:column}
+  footer{flex-direction:column;gap:8px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header class="header">
+  <a href="#" class="logo">SnapAnnotate</a>
+  <span class="beta-badge" aria-label="Beta version">Beta</span>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <h1>Turn any URL into annotated slides</h1>
+    <p>Paste a link, get social-ready carousel images with spotlights, badges, and step-by-step annotations. No Canva needed.</p>
+  </section>
+
+  <div class="input-area">
+    <div class="input-row">
+      <label for="urlInput" class="sr-only">Website URL</label>
+      <input type="url" id="urlInput" class="url-input" placeholder="https://example.com" aria-describedby="errorMsg">
+      <fieldset class="format-toggle" id="formatToggle" aria-label="Slide format">
+        <legend class="sr-only">Choose slide format</legend>
+        <button type="button" class="format-btn active" data-value="4:5" aria-pressed="true">4:5<span>Portrait</span></button>
+        <button type="button" class="format-btn" data-value="9:16" aria-pressed="false">9:16<span>Story</span></button>
+        <button type="button" class="format-btn" data-value="3:4" aria-pressed="false">1:1<span>Square</span></button>
+      </fieldset>
+    </div>
+    <button id="generateBtn" class="generate-btn" type="button">Generate Carousel</button>
+  </div>
+
+  <div id="progress" class="progress-area" aria-live="polite">
+    <div class="progress-step" data-step="capture"><span class="progress-dot" aria-hidden="true"></span> Capture</div>
+    <span class="progress-sep" aria-hidden="true">&#8250;</span>
+    <div class="progress-step" data-step="analyze"><span class="progress-dot" aria-hidden="true"></span> Analyze</div>
+    <span class="progress-sep" aria-hidden="true">&#8250;</span>
+    <div class="progress-step" data-step="render"><span class="progress-dot" aria-hidden="true"></span> Render</div>
+    <span class="progress-sep" aria-hidden="true">&#8250;</span>
+    <div class="progress-step" data-step="done"><span class="progress-dot" aria-hidden="true"></span> Done</div>
+  </div>
+
+  <div id="errorMsg" class="error-msg" role="alert" aria-live="assertive"></div>
+
+  <section id="results" class="results" aria-label="Generated carousel">
+    <div class="results-header">
+      <h2 class="results-title">Your Carousel</h2>
+      <div id="resultsMeta" class="results-meta"></div>
+    </div>
+    <div class="carousel-wrap">
+      <button class="carousel-arrow carousel-arrow-left" id="arrowLeft" aria-label="Previous slide">&#8249;</button>
+      <div id="gallery" class="gallery" role="list"></div>
+      <button class="carousel-arrow carousel-arrow-right" id="arrowRight" aria-label="Next slide">&#8250;</button>
+      <div id="carouselDots" class="carousel-dots" role="tablist" aria-label="Slide navigation"></div>
+    </div>
+    <div id="slideDetail" class="slide-detail">
+      <div id="slideDetailTitle" class="slide-detail-title"></div>
+      <div id="slideDetailDesc" class="slide-detail-desc"></div>
+    </div>
+    <div class="actions-row">
+      <button id="downloadAllBtn" class="action-btn" type="button">Download All (ZIP)</button>
+      <button id="copyUrlsBtn" class="action-btn" type="button">Copy URLs</button>
+    </div>
+  </section>
+
+  <section class="how-section" aria-label="How it works">
+    <h2 class="how-title">How it works</h2>
+    <div class="steps-row">
+      <div class="step-item"><span class="step-num" aria-hidden="true">1</span><span class="step-icon" aria-hidden="true">&#128247;</span><div class="step-label">Capture</div></div>
+      <div class="step-item"><span class="step-num" aria-hidden="true">2</span><span class="step-icon" aria-hidden="true">&#129504;</span><div class="step-label">Analyze</div></div>
+      <div class="step-item"><span class="step-num" aria-hidden="true">3</span><span class="step-icon" aria-hidden="true">&#9997;&#65039;</span><div class="step-label">Render</div></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>SnapAnnotate &middot; Hostinger Hackathon 2026</span>
+  <span>~$0.08 per run</span>
+</footer>
+
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Slide preview">
+  <button class="lightbox-close" aria-label="Close preview">&times;</button>
+  <img id="lightboxImg" src="" alt="Full size slide preview">
+</div>
+
+<!-- Visually hidden utility -->
+<style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
+
+<script src="app.js" defer></script>
+</body>
+</html>

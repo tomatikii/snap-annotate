@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnapAnnotate — Architect Blueprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Architects+Daughter&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bp-dark: #0D1B2A;
+  --bp-base: #1B2838;
+  --bp-mid: #1E3A5F;
+  --grid-major: rgba(46, 134, 171, 0.5);
+  --grid-minor: rgba(46, 134, 171, 0.2);
+  --line-white: #E0F4FF;
+  --cyan-glow: #00D4FF;
+  --warm: #FF6B35;
+  --faded: #8BADC1;
+  --pencil: #C5D5E0;
+  --red-ink: #E63946;
+  --green-ink: #2EC4B6;
+}
+
+body {
+  background: var(--bp-dark);
+  color: var(--line-white);
+  font-family: 'Space Grotesk', sans-serif;
+  min-height: 100vh;
+}
+
+/* Blueprint grid */
+.blueprint-bg {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bp-base);
+  background-image:
+    linear-gradient(var(--grid-major) 2px, transparent 2px),
+    linear-gradient(90deg, var(--grid-major) 2px, transparent 2px),
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+  z-index: 0;
+}
+
+/* Vignette */
+.blueprint-bg::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(13, 27, 42, 0.7) 100%);
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+/* ISO Drawing Border */
+.drawing-border {
+  border: 2px solid var(--faded);
+  padding: 40px;
+  position: relative;
+  margin-bottom: 40px;
+}
+.drawing-border::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(139, 173, 193, 0.3);
+}
+
+/* Title block (bottom-right engineering stamp) */
+.title-block {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  border-left: 2px solid var(--faded);
+  border-top: 2px solid var(--faded);
+  padding: 8px 16px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--faded);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  display: flex;
+  gap: 24px;
+}
+.title-block span { opacity: 0.7; }
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 60px;
+}
+.logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--line-white);
+}
+.logo span {
+  color: var(--cyan-glow);
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+}
+
+/* Stamp badge */
+.stamp {
+  display: inline-block;
+  border: 2px solid var(--warm);
+  border-radius: 4px;
+  padding: 4px 14px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--warm);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  transform: rotate(-3deg);
+  box-shadow: 0 0 0 1px var(--warm);
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.hero h1 {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  margin-bottom: 20px;
+}
+.hero h1 .accent {
+  color: var(--cyan-glow);
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+.hero .sketch-note {
+  font-family: 'Architects Daughter', cursive;
+  font-size: 18px;
+  color: var(--faded);
+  transform: rotate(-1deg);
+  display: inline-block;
+  margin-top: 8px;
+}
+
+/* Dimension line decoration */
+.dim-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin: 20px 0;
+  color: var(--faded);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+}
+.dim-line::before, .dim-line::after {
+  content: '';
+  flex: 1;
+  max-width: 120px;
+  height: 1px;
+  background: var(--faded);
+}
+
+/* Input area */
+.input-area {
+  background: rgba(30, 58, 95, 0.5);
+  border: 1.5px solid var(--faded);
+  padding: 32px;
+  position: relative;
+  margin-bottom: 32px;
+}
+
+/* Corner ticks on input area */
+.input-area::before {
+  content: '+';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  color: var(--faded);
+}
+.input-area::after {
+  content: '+';
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  color: var(--faded);
+}
+
+.field-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--faded);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.field-label::before {
+  content: '//';
+  color: var(--cyan-glow);
+  opacity: 0.6;
+}
+
+.url-input {
+  width: 100%;
+  background: rgba(13, 27, 42, 0.8);
+  border: none;
+  border-bottom: 2px solid var(--cyan-glow);
+  color: var(--line-white);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 16px;
+  padding: 14px 16px;
+  outline: none;
+  margin-bottom: 24px;
+}
+.url-input:focus {
+  border-bottom-color: var(--warm);
+  box-shadow: 0 2px 12px rgba(0, 212, 255, 0.15);
+}
+
+.options-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.option-group { flex: 1; }
+.option-group select {
+  width: 100%;
+  background: rgba(13, 27, 42, 0.8);
+  border: 1px solid rgba(139, 173, 193, 0.3);
+  border-bottom: 2px solid var(--faded);
+  color: var(--line-white);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Stamp-style CTA button */
+.cta-btn {
+  width: 100%;
+  padding: 18px;
+  background: transparent;
+  border: 3px solid var(--warm);
+  color: var(--warm);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s;
+}
+.cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--warm);
+  opacity: 0.5;
+}
+.cta-btn:hover {
+  background: rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 30px rgba(255, 107, 53, 0.2);
+  transform: rotate(-0.5deg);
+}
+
+/* Results */
+.results {
+  margin-top: 48px;
+}
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.results-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: var(--cyan-glow);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+.approved-stamp {
+  display: inline-block;
+  border: 2px solid var(--green-ink);
+  border-radius: 4px;
+  padding: 3px 12px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--green-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  transform: rotate(-2deg);
+}
+
+.gallery {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  scroll-snap-type: x mandatory;
+}
+.gallery::-webkit-scrollbar { height: 3px; }
+.gallery::-webkit-scrollbar-track { background: var(--bp-dark); }
+.gallery::-webkit-scrollbar-thumb { background: var(--cyan-glow); }
+
+.slide-card {
+  flex-shrink: 0;
+  width: 240px;
+  border: 1.5px solid var(--faded);
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: rgba(30, 58, 95, 0.3);
+  position: relative;
+  transition: border-color 0.3s;
+}
+.slide-card:hover { border-color: var(--cyan-glow); }
+
+/* Thumbtack dot */
+.slide-card::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red-ink);
+  box-shadow: 0 0 4px var(--red-ink);
+  z-index: 2;
+}
+
+.slide-img {
+  width: 100%;
+  aspect-ratio: 4/5;
+  background: rgba(13, 27, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--faded);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+}
+.slide-meta {
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(139, 173, 193, 0.2);
+}
+.slide-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--faded);
+}
+.slide-dl {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  color: var(--cyan-glow);
+  text-decoration: none;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  padding: 3px 8px;
+}
+
+.actions-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+.action-btn {
+  flex: 1;
+  padding: 12px;
+  background: transparent;
+  border: 1.5px solid var(--faded);
+  color: var(--line-white);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.action-btn:hover {
+  border-color: var(--cyan-glow);
+  background: rgba(0, 212, 255, 0.05);
+}
+
+/* How it works — section markers */
+.how-section {
+  margin-top: 80px;
+}
+.section-mark {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--faded);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-mark::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--faded), transparent);
+}
+
+.steps-row {
+  display: flex;
+  gap: 20px;
+}
+.step-card {
+  flex: 1;
+  border: 1.5px solid var(--faded);
+  padding: 24px 20px;
+  position: relative;
+  background: rgba(30, 58, 95, 0.3);
+}
+/* Double border */
+.step-card::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(139, 173, 193, 0.15);
+}
+.step-num {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--cyan-glow);
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+  margin-bottom: 12px;
+}
+.step-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--line-white);
+  margin-bottom: 8px;
+}
+.step-desc {
+  font-size: 13px;
+  color: var(--faded);
+  line-height: 1.5;
+}
+/* Dash-dot connector between steps */
+.step-connector {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+.step-connector::before {
+  content: '';
+  width: 20px;
+  border-top: 2px dashed var(--faded);
+}
+
+/* Sketch annotation */
+.sketch-label {
+  font-family: 'Architects Daughter', cursive;
+  color: var(--pencil);
+  font-size: 14px;
+  position: absolute;
+  transform: rotate(-3deg);
+}
+
+/* Footer */
+.footer {
+  margin-top: 80px;
+  padding: 20px 0;
+  border-top: 1px solid rgba(139, 173, 193, 0.2);
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--faded);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+</style>
+</head>
+<body>
+
+<div class="blueprint-bg"></div>
+
+<div class="container">
+  <div class="drawing-border">
+
+    <header class="header">
+      <div class="logo">SNAP<span>ANNOTATE</span></div>
+      <div class="stamp">BETA v1.0</div>
+    </header>
+
+    <section class="hero">
+      <h1>ANNOTATED TUTORIALS<br><span class="accent">ENGINEERED</span></h1>
+      <div class="dim-line">INPUT &rarr; PROCESS &rarr; OUTPUT</div>
+      <div class="sketch-note">paste a URL, get carousel slides ^</div>
+    </section>
+
+    <div class="input-area">
+      <div class="field-label">Target URL</div>
+      <input type="text" class="url-input" placeholder="https://your-website.com" value="https://stripe.com">
+
+      <div class="options-row">
+        <div class="option-group">
+          <div class="field-label">Format</div>
+          <select><option>4:5 Portrait</option><option>9:16 Story</option><option>3:4 Square</option></select>
+        </div>
+        <div class="option-group">
+          <div class="field-label">Theme</div>
+          <select><option>Dark</option><option>Light</option></select>
+        </div>
+        <div class="option-group">
+          <div class="field-label">Engine</div>
+          <select><option>Standard</option><option>AI Creative</option></select>
+        </div>
+      </div>
+
+      <button class="cta-btn">GENERATE CAROUSEL</button>
+    </div>
+
+    <section class="results">
+      <div class="results-header">
+        <div class="results-title">// Output &mdash; 5 slides rendered</div>
+        <div class="approved-stamp">APPROVED</div>
+      </div>
+
+      <div class="gallery">
+        <div class="slide-card"><div class="slide-img">SHEET 1/5</div><div class="slide-meta"><span class="slide-label">TITLE</span><a class="slide-dl" href="#">SAVE</a></div></div>
+        <div class="slide-card"><div class="slide-img">SHEET 2/5</div><div class="slide-meta"><span class="slide-label">STEP 01</span><a class="slide-dl" href="#">SAVE</a></div></div>
+        <div class="slide-card"><div class="slide-img">SHEET 3/5</div><div class="slide-meta"><span class="slide-label">STEP 02</span><a class="slide-dl" href="#">SAVE</a></div></div>
+        <div class="slide-card"><div class="slide-img">SHEET 4/5</div><div class="slide-meta"><span class="slide-label">STEP 03</span><a class="slide-dl" href="#">SAVE</a></div></div>
+        <div class="slide-card"><div class="slide-img">SHEET 5/5</div><div class="slide-meta"><span class="slide-label">SUMMARY</span><a class="slide-dl" href="#">SAVE</a></div></div>
+      </div>
+
+      <div class="actions-row">
+        <button class="action-btn">Download Archive</button>
+        <button class="action-btn">Copy URLs</button>
+      </div>
+    </section>
+
+    <section class="how-section">
+      <div class="section-mark">Section A &mdash; Process Flow</div>
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div class="step-title">Capture</div>
+          <div class="step-desc">ScreenshotOne captures viewport + extracts DOM elements</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div class="step-title">Analyze</div>
+          <div class="step-desc">Claude AI selects key elements and writes tutorial copy</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div class="step-title">Render</div>
+          <div class="step-desc">HCTI renders annotated slides as permanent PNG images</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="title-block">
+      <span>DWG NO: SA-001</span>
+      <span>REV: A</span>
+      <span>SCALE: 1:1</span>
+      <span>DATE: 2026-03-25</span>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <span>Built with n8n + Claude + ScreenshotOne + HCTI</span>
+    <span>Cost: ~$0.08/run</span>
+  </footer>
+</div>
+
+</body>
+</html>
