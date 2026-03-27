@@ -148,7 +148,7 @@ body{
   padding:6px 6px 6px 16px;
   transition:border-color .2s;
 }
-.input-row:focus-within{border-color:var(--primary)}
+.input-row:focus-within{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary),0 0 20px rgba(79,70,229,.1),0 0 40px rgba(79,70,229,.04)}
 
 .url-input{
   flex:1;
@@ -507,6 +507,26 @@ body{
 }
 .action-btn:active{transform:scale(0.97)}
 
+/* Staggered card reveal */
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(24px) scale(.94)}
+  to{opacity:.7;transform:translateY(0) scale(.94)}
+}
+.slide-card.reveal{animation:slideUp .4s ease-out forwards}
+
+/* Run stats */
+.run-stats{
+  display:none;
+  justify-content:center;
+  gap:16px;
+  margin-top:12px;
+  font-size:0.75rem;
+  color:var(--text-muted);
+}
+.run-stats.show{display:flex}
+.run-stats span{display:flex;align-items:center;gap:4px}
+.run-stats .stat-value{font-weight:600;color:var(--text)}
+
 /* Lightbox */
 .lightbox{
   display:none;
@@ -517,8 +537,11 @@ body{
   align-items:center;
   justify-content:center;
   cursor:pointer;
+  opacity:0;
+  transition:opacity .3s ease;
 }
-.lightbox.show{display:flex}
+.lightbox.show{display:flex;opacity:1}
+.lightbox.fade-in{opacity:1}
 .lightbox img{
   max-width:90vw;
   max-height:90vh;
@@ -631,7 +654,7 @@ footer{
         <legend class="sr-only">Choose slide format</legend>
         <button type="button" class="format-btn active" data-value="4:5" aria-pressed="true">4:5<span>Portrait</span></button>
         <button type="button" class="format-btn" data-value="9:16" aria-pressed="false">9:16<span>Story</span></button>
-        <button type="button" class="format-btn" data-value="3:4" aria-pressed="false">1:1<span>Square</span></button>
+        <button type="button" class="format-btn" data-value="3:4" aria-pressed="false">3:4<span>Pinterest</span></button>
       </fieldset>
     </div>
     <button id="generateBtn" class="generate-btn" type="button">Generate Carousel</button>
@@ -664,6 +687,11 @@ footer{
       <div id="slideDetailTitle" class="slide-detail-title"></div>
       <div id="slideDetailDesc" class="slide-detail-desc"></div>
     </div>
+    <div id="runStats" class="run-stats">
+      <span><span class="stat-value" id="statSlides">0</span> slides</span>
+      <span><span class="stat-value" id="statTime">0</span>s</span>
+      <span>~$<span class="stat-value" id="statCost">0.00</span> cost</span>
+    </div>
     <div class="actions-row">
       <button id="downloadAllBtn" class="action-btn" type="button">Download All (ZIP)</button>
       <button id="copyUrlsBtn" class="action-btn" type="button">Copy URLs</button>
@@ -682,7 +710,7 @@ footer{
 
 <footer>
   <span>SnapAnnotate &middot; Hostinger Hackathon 2026</span>
-  <span>~$0.08 per run</span>
+  <span>~$0.02 per run</span>
 </footer>
 
 <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Slide preview">

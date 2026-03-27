@@ -57,6 +57,8 @@ function resetUI() {
   errorMsg.classList.remove('show');
   results.classList.remove('show');
   slideDetail.classList.remove('show');
+  const runStats = document.getElementById('runStats');
+  if (runStats) runStats.classList.remove('show');
   gallery.innerHTML = '';
   carouselDots.innerHTML = '';
   slideUrls = [];
@@ -193,6 +195,7 @@ btn.addEventListener('click', async () => {
               e.stopPropagation();
               lightboxImg.src = slide.url;
               lightbox.classList.add('show');
+              requestAnimationFrame(() => lightbox.classList.add('fade-in'));
             });
             card.querySelector('.slide-dl-btn').addEventListener('click', (e) => {
               e.stopPropagation();
@@ -207,6 +210,24 @@ btn.addEventListener('click', async () => {
             carouselDots.appendChild(dot);
           });
 
+          // Staggered card reveal
+          document.querySelectorAll('.slide-card').forEach((card, i) => {
+            card.style.animationDelay = `${i * 100}ms`;
+            card.classList.add('reveal');
+          });
+
+          // Run stats
+          const costPerSlide = 0.003;
+          const estCost = (slidesData.length * costPerSlide + 0.005).toFixed(3);
+          const statSlides = document.getElementById('statSlides');
+          const statTime = document.getElementById('statTime');
+          const statCost = document.getElementById('statCost');
+          const runStats = document.getElementById('runStats');
+          if (statSlides) statSlides.textContent = statusData.totalSlides;
+          if (statTime) statTime.textContent = totalElapsed;
+          if (statCost) statCost.textContent = estCost;
+          if (runStats) runStats.classList.add('show');
+
           // Activate first slide
           setActiveSlide(0);
 
@@ -216,6 +237,7 @@ btn.addEventListener('click', async () => {
           setTimeout(() => {
             progress.classList.remove('show');
             btn.disabled = false;
+            btn.classList.remove('loading');
             btn.innerHTML = 'GENERATE CAROUSEL';
           }, 1500);
           return;
@@ -232,8 +254,8 @@ btn.addEventListener('click', async () => {
 
 // Lightbox
 function closeLightbox() {
-  lightbox.classList.remove('show');
-  // Return focus to the active slide card
+  lightbox.classList.remove('fade-in');
+  setTimeout(() => lightbox.classList.remove('show'), 300);
   const cards = gallery.querySelectorAll('.slide-card');
   if (cards[activeSlideIdx]) cards[activeSlideIdx].focus();
 }
