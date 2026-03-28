@@ -40,6 +40,12 @@ function getFormat() {
 
 // Progress
 const STEPS = ['capture', 'analyze', 'render', 'done'];
+const STEP_LABELS = {
+  capture: 'Capturing screenshot',
+  analyze: 'Analyzing elements',
+  render: 'Rendering slides',
+  done: 'Finishing up'
+};
 function setProgress(stepName) {
   progress.classList.add('show');
   STEPS.forEach(s => {
@@ -50,9 +56,29 @@ function setProgress(stepName) {
     if (idx < activeIdx) el.classList.add('done');
     else if (idx === activeIdx) el.classList.add('active');
   });
+  // Update button text with current step
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  const label = STEP_LABELS[stepName] || 'Working';
+  btn.innerHTML = `<span class="spinner"></span> ${label}... ${elapsed}s`;
+}
+// Keep elapsed time ticking on the button
+let timerInterval = null;
+function startTimer() {
+  stopTimer();
+  timerInterval = setInterval(() => {
+    if (!btn.classList.contains('loading')) { stopTimer(); return; }
+    const activeStep = STEPS.find(s => progress.querySelector(`[data-step="${s}"]`)?.classList.contains('active')) || 'capture';
+    const elapsed = Math.round((Date.now() - startTime) / 1000);
+    const label = STEP_LABELS[activeStep] || 'Working';
+    btn.innerHTML = `<span class="spinner"></span> ${label}... ${elapsed}s`;
+  }, 1000);
+}
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
 }
 
 function resetUI() {
+  stopTimer();
   progress.classList.remove('show');
   errorMsg.classList.remove('show');
   results.classList.remove('show');
@@ -70,6 +96,7 @@ function resetUI() {
 }
 
 function showError(msg) {
+  stopTimer();
   errorMsg.textContent = msg;
   errorMsg.classList.add('show');
   progress.classList.remove('show');
@@ -128,9 +155,9 @@ btn.addEventListener('click', async () => {
   resetUI();
   btn.disabled = true;
   btn.classList.add('loading');
-  btn.innerHTML = '<span class="spinner"></span> Working...';
   startTime = Date.now();
   setProgress('capture');
+  startTimer();
 
   try {
     const startResp = await fetch(WEBHOOK_URL, {
@@ -235,6 +262,7 @@ btn.addEventListener('click', async () => {
           results.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
           setTimeout(() => {
+            stopTimer();
             progress.classList.remove('show');
             btn.disabled = false;
             btn.classList.remove('loading');
