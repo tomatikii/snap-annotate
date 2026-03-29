@@ -270,8 +270,9 @@ btn.addEventListener('click', async () => {
           });
 
           // Run stats
-          const costPerSlide = 0.003;
-          const estCost = (slidesData.length * costPerSlide + 0.005).toFixed(3);
+          const baseCost = 0.007; // screenshot + LLM vision call
+          const renderCost = 0.001; // per slide HCTI render
+          const estCost = (baseCost + slidesData.length * renderCost).toFixed(3);
           const statSlides = document.getElementById('statSlides');
           const statTime = document.getElementById('statTime');
           const statCost = document.getElementById('statCost');
