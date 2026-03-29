@@ -204,6 +204,50 @@ body{
   .format-btn:hover:not(.active){background:var(--white)}
 }
 
+/* Depth toggle */
+.depth-toggle{
+  display:flex;
+  justify-content:center;
+  gap:2px;
+  margin-top:10px;
+  background:var(--bg);
+  border-radius:var(--radius-sm);
+  padding:3px;
+  border:none;
+}
+.depth-btn{
+  flex:1;
+  padding:8px 12px;
+  border:none;
+  background:transparent;
+  font-family:'Inter',sans-serif;
+  font-size:0.75rem;
+  font-weight:600;
+  color:var(--text-sub);
+  cursor:pointer;
+  border-radius:6px;
+  transition:all .15s;
+  line-height:1.2;
+  text-align:center;
+  min-height:40px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.depth-btn span{
+  display:block;
+  font-size:0.625rem;
+  font-weight:500;
+  color:var(--text-muted);
+  margin-top:1px;
+}
+.depth-btn.active{background:var(--primary);color:#fff}
+.depth-btn.active span{color:rgba(255,255,255,.7)}
+@media(hover:hover){
+  .depth-btn:hover:not(.active){background:var(--white)}
+}
+
 /* Generate button */
 .generate-btn{
   display:block;
@@ -689,6 +733,12 @@ footer{
         <button type="button" class="format-btn" data-value="1:1" aria-pressed="false">1:1<span>Square</span></button>
       </fieldset>
     </div>
+    <fieldset class="depth-toggle" id="depthToggle" aria-label="Slide count">
+      <legend class="sr-only">Choose slide count</legend>
+      <button type="button" class="depth-btn" data-value="quick" aria-pressed="false">Quick<span>3-4 slides</span></button>
+      <button type="button" class="depth-btn active" data-value="standard" aria-pressed="true">Standard<span>5-7 slides</span></button>
+      <button type="button" class="depth-btn" data-value="detailed" aria-pressed="false">Detailed<span>7-10 slides</span></button>
+    </fieldset>
     <button id="generateBtn" class="generate-btn" type="button">Generate Carousel</button>
   </div>
 

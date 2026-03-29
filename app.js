@@ -38,6 +38,23 @@ function getFormat() {
   return active ? active.dataset.value : '4:5';
 }
 
+// Depth toggle
+document.querySelectorAll('.depth-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.depth-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+  });
+});
+
+function getDepth() {
+  const active = document.querySelector('.depth-btn.active');
+  return active ? active.dataset.value : 'standard';
+}
+
 // Progress
 const STEPS = ['capture', 'analyze', 'render', 'done'];
 const STEP_LABELS = {
@@ -170,7 +187,7 @@ btn.addEventListener('click', async () => {
     const startResp = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, format: getFormat() })
+      body: JSON.stringify({ url, format: getFormat(), depth: getDepth() })
     });
     if (!startResp.ok) throw new Error(`Server error ${startResp.status}`);
     const startData = await startResp.json();
