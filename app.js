@@ -141,9 +141,16 @@ arrowRight.addEventListener('click', () => {
 // Keyboard arrows
 document.addEventListener('keydown', (e) => {
   if (!results.classList.contains('show')) return;
-  if (e.key === 'ArrowLeft' && activeSlideIdx > 0) setActiveSlide(activeSlideIdx - 1);
-  if (e.key === 'ArrowRight' && activeSlideIdx < slidesData.length - 1) setActiveSlide(activeSlideIdx + 1);
-  if (e.key === 'Escape') lightbox.classList.remove('show');
+  const isLightboxOpen = lightbox.classList.contains('show');
+  if (e.key === 'ArrowLeft' && activeSlideIdx > 0) {
+    setActiveSlide(activeSlideIdx - 1);
+    if (isLightboxOpen) updateLightbox();
+  }
+  if (e.key === 'ArrowRight' && activeSlideIdx < slidesData.length - 1) {
+    setActiveSlide(activeSlideIdx + 1);
+    if (isLightboxOpen) updateLightbox();
+  }
+  if (e.key === 'Escape') closeLightbox();
 });
 
 // Generate
@@ -220,7 +227,9 @@ btn.addEventListener('click', async () => {
             card.addEventListener('click', () => setActiveSlide(i));
             card.querySelector('.slide-img').addEventListener('dblclick', (e) => {
               e.stopPropagation();
+              setActiveSlide(i);
               lightboxImg.src = slide.url;
+              lbCounter.textContent = `${i + 1} / ${statusData.totalSlides}`;
               lightbox.classList.add('show');
               requestAnimationFrame(() => lightbox.classList.add('fade-in'));
             });
@@ -281,6 +290,25 @@ btn.addEventListener('click', async () => {
 });
 
 // Lightbox
+const lbArrowLeft = $('lbArrowLeft');
+const lbArrowRight = $('lbArrowRight');
+const lbCounter = $('lbCounter');
+
+function updateLightbox() {
+  if (slideUrls[activeSlideIdx]) {
+    lightboxImg.src = slideUrls[activeSlideIdx];
+  }
+  lbCounter.textContent = `${activeSlideIdx + 1} / ${slidesData.length}`;
+}
+
+function navigateLightbox(dir) {
+  const next = activeSlideIdx + dir;
+  if (next >= 0 && next < slidesData.length) {
+    setActiveSlide(next);
+    updateLightbox();
+  }
+}
+
 function closeLightbox() {
   lightbox.classList.remove('fade-in');
   setTimeout(() => lightbox.classList.remove('show'), 300);
@@ -288,7 +316,10 @@ function closeLightbox() {
   if (cards[activeSlideIdx]) cards[activeSlideIdx].focus();
 }
 lightbox.addEventListener('click', closeLightbox);
+lightboxImg.addEventListener('click', (e) => e.stopPropagation());
 document.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
+lbArrowLeft.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(-1); });
+lbArrowRight.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(1); });
 
 async function downloadImage(url, filename) {
   try {
